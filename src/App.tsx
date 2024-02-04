@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useCallback, useState } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+enum Direction {
+	LEFT = 'LEFT',
+	RIGHT = 'RIGHT',
+	MIDDLE = 'MIDDLE'
 }
 
-export default App
+export const App = () => {
+	const [direction, setDirection] = useState<Direction>(Direction.MIDDLE);
+	const startAcceleration = useCallback(() => {
+		DeviceMotionEvent.requestPermission()
+			.then(response => {
+				if (response === 'granted') {
+					window.addEventListener('deviceorientation', (event: DeviceOrientationEvent) => {
+						const { alpha } = event;
+
+						if (!alpha) {
+							return;
+						}
+
+						if (alpha > 10 && alpha < 100) {
+							setDirection(Direction.LEFT)
+						} else if (alpha < 350 && alpha > 260) {
+							setDirection(Direction.RIGHT);
+						} else {
+							setDirection(Direction.MIDDLE);
+						}
+					})
+				}
+			})
+	}, [])
+
+	return (
+		<>
+			<button onClick={startAcceleration}>Start</button>
+
+			<span>Direction: {direction}</span>
+		</>
+	)
+}
